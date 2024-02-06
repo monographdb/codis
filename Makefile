@@ -6,14 +6,13 @@ build-all: codis-server codis-dashboard codis-proxy codis-admin codis-ha codis-f
 
 codis-deps:
 	@mkdir -p bin config && bash version
-	@make --no-print-directory -C vendor/github.com/spinlock/jemalloc-go/
 
 codis-dashboard: codis-deps
 	go build -o bin/codis-dashboard ./cmd/dashboard
 	@./bin/codis-dashboard --default-config > config/dashboard.toml
 
 codis-proxy: codis-deps
-	go build -tags "cgo_jemalloc" -o bin/codis-proxy ./cmd/proxy
+	go build -o bin/codis-proxy ./cmd/proxy
 	@./bin/codis-proxy --default-config > config/proxy.toml
 
 codis-admin: codis-deps

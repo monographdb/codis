@@ -44,7 +44,7 @@ Options:
 	switch {
 
 	case d["--default-config"]:
-		fmt.Println(topom.DefaultConfig)
+		fmt.Print(topom.DefaultConfig)
 		return
 
 	case d["--version"].(bool):

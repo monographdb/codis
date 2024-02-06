@@ -14,7 +14,7 @@ require (
 	github.com/martini-contrib/gzip v0.0.0-20151124214156-6c035326b43f
 	github.com/martini-contrib/render v0.0.0-20150707142108-ec18f8345a11
 	github.com/samuel/go-zookeeper v0.0.0-20161028232340-1d7be4effb13
-	github.com/spinlock/jemalloc-go v0.0.0-20161230074307-26719b2ee618
+	github.com/spinlock/jemalloc-go v0.0.0-20201010032256-e81523fb8524
 	golang.org/x/net v0.0.0-20170118032911-242b6b35177e
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0
 )
