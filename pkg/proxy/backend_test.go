@@ -50,7 +50,7 @@ func TestBackend(t *testing.T) {
 	go func() {
 		defer conn.Close()
 		time.Sleep(time.Millisecond * 300)
-		for i, _ := range array {
+		for i := range array {
 			_, err := conn.Decode()
 			assert.MustNoError(err)
 			resp := redis.NewString([]byte(strconv.Itoa(i)))

@@ -51,7 +51,7 @@ Options:
 	switch {
 
 	case d["--default-config"]:
-		fmt.Println(proxy.DefaultConfig)
+		fmt.Print(proxy.DefaultConfig)
 		return
 
 	case d["--version"].(bool):
