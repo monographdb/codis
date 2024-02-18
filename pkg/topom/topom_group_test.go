@@ -48,7 +48,7 @@ func TestGroupRemove(x *testing.T) {
 	assert.MustNoError(t.RemoveGroup(gid))
 
 	g.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: "server"},
+		{Addr: "server"},
 	}
 	contextUpdateGroup(t, g)
 	assert.Must(t.RemoveGroup(gid) != nil)
@@ -99,8 +99,8 @@ func TestGroupDelServer(x *testing.T) {
 	reset := func() {
 		g := &models.Group{Id: gid}
 		g.Servers = []*models.GroupServer{
-			&models.GroupServer{Addr: server1},
-			&models.GroupServer{Addr: server2},
+			{Addr: server1},
+			{Addr: server2},
 		}
 		contextUpdateGroup(t, g)
 	}
@@ -149,8 +149,8 @@ func TestGroupPromote(x *testing.T) {
 	reset := func() {
 		g := &models.Group{Id: gid}
 		g.Servers = []*models.GroupServer{
-			&models.GroupServer{Addr: server1},
-			&models.GroupServer{Addr: server2},
+			{Addr: server1},
+			{Addr: server2},
 		}
 		contextUpdateGroup(t, g)
 	}

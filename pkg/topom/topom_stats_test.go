@@ -93,8 +93,8 @@ func TestRedisStats(x *testing.T) {
 	defer s2.Close()
 
 	g.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: s1.Addr},
-		&models.GroupServer{Addr: s2.Addr},
+		{Addr: s1.Addr},
+		{Addr: s2.Addr},
 	}
 
 	check([]string{}, []string{})
@@ -112,7 +112,7 @@ func TestRedisStats(x *testing.T) {
 	defer s3.Close()
 
 	g.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: s3.Addr},
+		{Addr: s3.Addr},
 	}
 	contextUpdateGroup(t, g)
 	check([]string{s3.Addr}, []string{})

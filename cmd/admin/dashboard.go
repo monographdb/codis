@@ -582,7 +582,7 @@ func (t *cmdDashboard) handleGroupCommand(d map[string]interface{}) {
 		var wgid, widx int
 		for _, g := range s.Group.Models {
 			wgid = math2.MaxInt(wgid, len(strconv.Itoa(g.Id)))
-			for i, _ := range g.Servers {
+			for i := range g.Servers {
 				widx = math2.MaxInt(widx, len(strconv.Itoa(i)))
 			}
 		}

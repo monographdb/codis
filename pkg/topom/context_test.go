@@ -76,13 +76,13 @@ func TestSlotState(x *testing.T) {
 	g1 := &models.Group{
 		Id: gid1,
 		Servers: []*models.GroupServer{
-			&models.GroupServer{Addr: server1},
+			{Addr: server1},
 		},
 	}
 	g2 := &models.Group{
 		Id: gid2,
 		Servers: []*models.GroupServer{
-			&models.GroupServer{Addr: server2},
+			{Addr: server2},
 		},
 	}
 

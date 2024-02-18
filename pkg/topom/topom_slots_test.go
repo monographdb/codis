@@ -55,7 +55,7 @@ func TestSlotCreateAction(x *testing.T) {
 	assert.Must(t.SlotCreateAction(sid, gid) != nil)
 
 	g.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: "server"},
+		{Addr: "server"},
 	}
 	contextUpdateGroup(t, g)
 	assert.MustNoError(t.SlotCreateAction(sid, gid))
@@ -231,12 +231,12 @@ func TestSlotActionPrepared(x *testing.T) {
 
 	g1 := &models.Group{Id: gid1}
 	g1.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: server1},
+		{Addr: server1},
 	}
 	contextCreateGroup(t, g1)
 	g2 := &models.Group{Id: gid2}
 	g2.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: server2},
+		{Addr: server2},
 	}
 	contextCreateGroup(t, g2)
 
@@ -296,12 +296,12 @@ func TestSlotActionMigrating(x *testing.T) {
 
 	g1 := &models.Group{Id: gid1}
 	g1.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: server1},
+		{Addr: server1},
 	}
 	contextCreateGroup(t, g1)
 	g2 := &models.Group{Id: gid2}
 	g2.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: server2},
+		{Addr: server2},
 	}
 	contextCreateGroup(t, g2)
 
@@ -365,12 +365,12 @@ func TestSlotActionFinished(x *testing.T) {
 
 	g1 := &models.Group{Id: gid1}
 	g1.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: server1},
+		{Addr: server1},
 	}
 	contextCreateGroup(t, g1)
 	g2 := &models.Group{Id: gid2}
 	g2.Servers = []*models.GroupServer{
-		&models.GroupServer{Addr: server2},
+		{Addr: server2},
 	}
 	contextCreateGroup(t, g2)
 
@@ -434,7 +434,7 @@ func TestSlotsAssignGroup(x *testing.T) {
 	assert.Must(t.SlotsAssignGroup([]*models.SlotMapping{m}) != nil)
 
 	g := &models.Group{Id: 200, Servers: []*models.GroupServer{
-		&models.GroupServer{Addr: "server"},
+		{Addr: "server"},
 	}}
 	contextCreateGroup(t, g)
 	assert.Must(t.SlotsAssignGroup([]*models.SlotMapping{m}) != nil)
@@ -463,7 +463,7 @@ func TestSlotsRebalance(x *testing.T) {
 	assert.Must(plans1 == nil && err != nil)
 
 	g1 := &models.Group{Id: 100, Servers: []*models.GroupServer{
-		&models.GroupServer{Addr: "server1"},
+		{Addr: "server1"},
 	}}
 	contextCreateGroup(t, g1)
 
@@ -474,7 +474,7 @@ func TestSlotsRebalance(x *testing.T) {
 	assert.Must(len(d2) == 1 && d2[g1.Id] == MaxSlotNum)
 
 	g2 := &models.Group{Id: 200, Servers: []*models.GroupServer{
-		&models.GroupServer{Addr: "server2"},
+		{Addr: "server2"},
 	}}
 	contextCreateGroup(t, g2)
 

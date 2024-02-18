@@ -6,7 +6,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/CodisLabs/codis/pkg/models"
 	"github.com/CodisLabs/codis/pkg/proxy"
@@ -134,7 +134,7 @@ func (t *cmdProxy) handleLogLevel(d map[string]interface{}) {
 func (t *cmdProxy) handleFillSlots(d map[string]interface{}) {
 	c := t.newProxyClient(true)
 
-	b, err := ioutil.ReadFile(utils.ArgumentMust(d, "--fillslots"))
+	b, err := os.ReadFile(utils.ArgumentMust(d, "--fillslots"))
 	if err != nil {
 		log.PanicErrorf(err, "load slots from file failed")
 	}

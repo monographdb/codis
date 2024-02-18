@@ -84,7 +84,7 @@ func (s *Topom) refillCacheSlots(slots []*models.SlotMapping) ([]*models.SlotMap
 	if slots == nil {
 		return s.store.SlotMappings()
 	}
-	for i, _ := range slots {
+	for i := range slots {
 		if slots[i] != nil {
 			continue
 		}
@@ -105,7 +105,7 @@ func (s *Topom) refillCacheGroup(group map[int]*models.Group) (map[int]*models.G
 	if group == nil {
 		return s.store.ListGroup()
 	}
-	for i, _ := range group {
+	for i := range group {
 		if group[i] != nil {
 			continue
 		}
@@ -126,7 +126,7 @@ func (s *Topom) refillCacheProxy(proxy map[string]*models.Proxy) (map[string]*mo
 	if proxy == nil {
 		return s.store.ListProxy()
 	}
-	for t, _ := range proxy {
+	for t := range proxy {
 		if proxy[t] != nil {
 			continue
 		}

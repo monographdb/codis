@@ -6,7 +6,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -185,7 +185,7 @@ func (t *cmdAdmin) dumpConfigV3(d map[string]interface{}) {
 }
 
 func (t *cmdAdmin) loadJsonConfigV1(file string) map[string]interface{} {
-	b, err := ioutil.ReadFile(file)
+	b, err := os.ReadFile(file)
 	if err != nil {
 		log.PanicErrorf(err, "read file '%s' failed", file)
 	}
@@ -291,7 +291,7 @@ func (t *cmdAdmin) handleConfigConvert(d map[string]interface{}) {
 }
 
 func (t *cmdAdmin) loadJsonConfigV3(file string) *ConfigV3 {
-	b, err := ioutil.ReadFile(file)
+	b, err := os.ReadFile(file)
 	if err != nil {
 		log.PanicErrorf(err, "read file '%s' failed", file)
 	}

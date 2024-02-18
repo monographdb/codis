@@ -6,7 +6,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -180,7 +179,7 @@ Options:
 	r := martini.NewRouter()
 	r.Get("/list", func() (int, string) {
 		names := router.GetNames()
-		sort.Sort(sort.StringSlice(names))
+		sort.Strings(names)
 		return rpc.ApiResponseJson(names)
 	})
 
@@ -205,7 +204,7 @@ Options:
 	if s, ok := utils.Argument(d, "--pidfile"); ok {
 		if pidfile, err := filepath.Abs(s); err != nil {
 			log.WarnErrorf(err, "parse pidfile = '%s' failed", s)
-		} else if err := ioutil.WriteFile(pidfile, []byte(strconv.Itoa(os.Getpid())), 0644); err != nil {
+		} else if err := os.WriteFile(pidfile, []byte(strconv.Itoa(os.Getpid())), 0644); err != nil {
 			log.WarnErrorf(err, "write pidfile = '%s' failed", pidfile)
 		} else {
 			defer func() {
@@ -234,7 +233,7 @@ type StaticLoader struct {
 }
 
 func (l *StaticLoader) Reload() (map[string]string, error) {
-	b, err := ioutil.ReadFile(l.path)
+	b, err := os.ReadFile(l.path)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -293,7 +292,7 @@ func NewReverseProxy(loader ConfigLoader) *ReverseProxy {
 }
 
 func (r *ReverseProxy) reload(d time.Duration) {
-	if time.Now().Sub(r.loadAt) < d {
+	if time.Since(r.loadAt) < d {
 		return
 	}
 	r.routes = make(map[string]*httputil.ReverseProxy)
@@ -324,7 +323,7 @@ func (r *ReverseProxy) GetNames() []string {
 	defer r.Unlock()
 	r.reload(time.Second * 5)
 	var names []string
-	for name, _ := range r.routes {
+	for name := range r.routes {
 		names = append(names, name)
 	}
 	return names

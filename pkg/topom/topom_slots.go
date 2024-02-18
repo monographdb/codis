@@ -692,7 +692,7 @@ func (s *Topom) SlotsRebalance(confirm bool) (map[int]int, error) {
 	}
 
 	var slotIds []int
-	for sid, _ := range plans {
+	for sid := range plans {
 		slotIds = append(slotIds, sid)
 	}
 	sort.Ints(slotIds)

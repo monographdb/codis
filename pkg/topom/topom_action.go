@@ -50,7 +50,7 @@ func (s *Topom) ProcessSlotAction() error {
 			return nil
 		}
 		var fut sync2.Future
-		for sid, _ := range plans {
+		for sid := range plans {
 			fut.Add()
 			go func(sid int) {
 				log.Warnf("slot-[%d] process action", sid)

@@ -213,7 +213,7 @@ func (hc *HealthyChecker) LogGroupStats() {
 	var wgid, widx int
 	for _, g := range hc.Group.Models {
 		wgid = math2.MaxInt(wgid, len(strconv.Itoa(g.Id)))
-		for i, _ := range g.Servers {
+		for i := range g.Servers {
 			widx = math2.MaxInt(widx, len(strconv.Itoa(i)))
 		}
 	}

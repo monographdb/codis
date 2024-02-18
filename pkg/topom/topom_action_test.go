@@ -27,7 +27,7 @@ func TestSlotAction(x *testing.T) {
 		contextUpdateSlotMapping(t, m)
 		g := &models.Group{Id: gid}
 		g.Servers = []*models.GroupServer{
-			&models.GroupServer{Addr: s.Addr},
+			{Addr: s.Addr},
 		}
 		contextUpdateGroup(t, g)
 	}
@@ -75,8 +75,8 @@ func TestSyncAction(x *testing.T) {
 	reset := func() {
 		g := &models.Group{Id: gid}
 		g.Servers = []*models.GroupServer{
-			&models.GroupServer{Addr: server1},
-			&models.GroupServer{Addr: server2},
+			{Addr: server1},
+			{Addr: server2},
 		}
 		contextUpdateGroup(t, g)
 	}
