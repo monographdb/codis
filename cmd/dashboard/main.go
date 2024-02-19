@@ -121,7 +121,7 @@ Options:
 	defer client.Close()
 
 	if d["--remove-lock"].(bool) {
-		store := models.NewStore(client, config.ProductName)
+		store := models.NewStore(nil, client, config.ProductName)
 		defer store.Close()
 
 		log.Warnf("force remove-lock")

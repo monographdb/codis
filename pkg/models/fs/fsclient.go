@@ -6,7 +6,6 @@ package fsclient
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -130,7 +129,7 @@ func (c *Client) newTempFile() (*os.File, error) {
 		return nil, err
 	}
 	prefix := fmt.Sprintf("%d.", int(time.Now().Unix()))
-	f, err := ioutil.TempFile(c.TempDir, prefix)
+	f, err := os.CreateTemp(c.TempDir, prefix)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -262,7 +261,7 @@ func (c *Client) Read(path string, must bool) ([]byte, error) {
 		}
 	}
 
-	b, err := ioutil.ReadFile(realpath)
+	b, err := os.ReadFile(realpath)
 	if err != nil {
 		log.Warnf("fsclient - read %s failed", path)
 		return nil, errors.Trace(err)

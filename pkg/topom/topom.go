@@ -23,6 +23,7 @@ import (
 	"github.com/CodisLabs/codis/pkg/utils/redis"
 	"github.com/CodisLabs/codis/pkg/utils/rpc"
 	"github.com/CodisLabs/codis/pkg/utils/sync2/atomic2"
+	"github.com/gocql/gocql"
 )
 
 type Topom struct {
@@ -79,6 +80,8 @@ type Topom struct {
 
 var ErrClosedTopom = errors.New("use of closed topom")
 
+const CODIS_DML = "CREATE TABLE IF NOT EXISTS codis (product text, directory text, file text, content text, PRIMARY KEY(product,directory,file))"
+
 func New(client models.Client, config *Config) (*Topom, error) {
 	if err := config.Validate(); err != nil {
 		return nil, errors.Trace(err)
@@ -105,7 +108,22 @@ func New(client models.Client, config *Config) (*Topom, error) {
 	} else {
 		s.model.Sys = strings.TrimSpace(string(b))
 	}
-	s.store = models.NewStore(client, config.ProductName)
+
+	cluster := gocql.NewCluster(config.CoordinatorAddr)
+	cluster.Keyspace = config.CoordinatorKeyspace
+	config.CoordinatorAuth = strings.TrimSpace(config.CoordinatorAuth)
+	if len(config.CoordinatorAuth) > 0 {
+		auth := strings.SplitN(config.CoordinatorAuth, ":", 2)
+		cluster.Authenticator = gocql.PasswordAuthenticator{Username: auth[0], Password: auth[1]}
+	}
+	if session, err := cluster.CreateSession(); err != nil {
+		return nil, errors.Trace(err)
+	} else {
+		s.store = models.NewStore(session, client, config.ProductName)
+		if err = session.Query(CODIS_DML).Exec(); err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
 
 	s.stats.redisp = redis.NewPool(config.ProductAuth, time.Second*5)
 	s.stats.servers = make(map[string]*RedisStats)

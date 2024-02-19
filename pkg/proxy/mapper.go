@@ -5,7 +5,6 @@ package proxy
 
 import (
 	"bytes"
-	"hash/crc32"
 	"strings"
 
 	"github.com/CodisLabs/codis/pkg/proxy/redis"
@@ -294,7 +293,7 @@ func getOpInfo(multi []*redis.Resp) (string, OpFlag, error) {
 	return string(op), FlagMayWrite, nil
 }
 
-func Hash(key []byte) uint32 {
+func Hash(key []byte) uint16 {
 	const (
 		TagBeg = '{'
 		TagEnd = '}'
@@ -304,7 +303,8 @@ func Hash(key []byte) uint32 {
 			key = key[beg+1 : beg+1+end]
 		}
 	}
-	return crc32.ChecksumIEEE(key)
+	return CRC16_XMODEM(key)
+	// return crc32.ChecksumIEEE(key)
 }
 
 func getHashKey(multi []*redis.Resp, opstr string) []byte {

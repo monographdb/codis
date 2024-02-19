@@ -372,10 +372,10 @@ func (s *apiServer) GroupAddServer(params martini.Params) (int, string) {
 		return rpc.ApiResponseError(err)
 	}
 	defer c.Close()
-	if _, err := c.SlotsInfo(); err != nil {
-		log.WarnErrorf(err, "redis %s check slots-info failed", addr)
-		return rpc.ApiResponseError(err)
-	}
+	// if _, err := c.SlotsInfo(); err != nil {
+	// 	log.WarnErrorf(err, "redis %s check slots-info failed", addr)
+	// 	return rpc.ApiResponseError(err)
+	// }
 	if err := s.topom.GroupAddServer(gid, dc, addr); err != nil {
 		return rpc.ApiResponseError(err)
 	} else {

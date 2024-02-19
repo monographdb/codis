@@ -78,7 +78,7 @@ func (t *cmdAdmin) newTopomStore(d map[string]interface{}) *models.Store {
 		log.PanicErrorf(err, "invalid product name")
 	}
 	client := t.newTopomClient(d)
-	return models.NewStore(client, t.product)
+	return models.NewStore(nil, client, t.product)
 }
 
 func (t *cmdAdmin) handleRemoveLock(d map[string]interface{}) {

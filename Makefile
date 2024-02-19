@@ -58,3 +58,11 @@ docker:
 
 demo:
 	pushd example && make
+
+tarball: codis-deps
+	@mkdir -p /tmp/tarball/codis && bash version && cp bin/version /tmp/tarball/codis/version
+	go build -o /tmp/tarball/codis/codis-dashboard ./cmd/dashboard
+	@/tmp/tarball/codis/codis-dashboard --default-config > /tmp/tarball/codis/dashboard.toml
+	go build -o /tmp/tarball/codis/codis-proxy ./cmd/proxy
+	@/tmp/tarball/codis/codis-proxy --default-config > /tmp/tarball/codis/proxy.toml
+	@cd /tmp/tarball && tar -czvf codis.tar.gz codis
