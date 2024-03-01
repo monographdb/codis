@@ -448,7 +448,7 @@ func (s *Proxy) acceptConn(l net.Listener) (net.Conn, error) {
 	for {
 		c, err := l.Accept()
 		if err != nil {
-			if e, ok := err.(net.Error); ok && e.Temporary() {
+			if e, ok := err.(net.Error); ok && e.Timeout() {
 				log.WarnErrorf(err, "[%p] proxy accept new connection failed", s)
 				delay.Sleep()
 				continue
