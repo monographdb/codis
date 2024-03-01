@@ -9,6 +9,7 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/CodisLabs/codis/pkg/models"
@@ -18,7 +19,10 @@ import (
 	"github.com/CodisLabs/codis/pkg/utils/sync2/atomic2"
 )
 
+var sess_id atomic.Uint32
+
 type Session struct {
+	id   uint32
 	Conn *redis.Conn
 
 	Ops int64
@@ -72,21 +76,23 @@ func NewSession(sock net.Conn, config *Config) *Session {
 	c.SetKeepAlivePeriod(config.SessionKeepAlivePeriod.Duration())
 
 	s := &Session{
+		id:   sess_id.Add(1),
 		Conn: c, config: config,
 		CreateUnix: time.Now().Unix(),
 	}
 	s.stats.opmap = make(map[string]*opStats, 16)
-	log.Infof("session [%p] create: %s", s, s)
+	log.Infof("session [%d] create: %s", s.id, s)
 	return s
 }
 
 func (s *Session) CloseReaderWithError(err error) error {
 	s.exit.Do(func() {
 		if err != nil {
-			log.Infof("session [%p] closed: %s, error: %s", s, s, err)
+			log.Infof("session [%d] closed: %s, error: %s", s.id, s, err)
 		} else {
-			log.Infof("session [%p] closed: %s, quit", s, s)
+			log.Infof("session [%d] closed: %s, quit", s.id, s)
 		}
+		s.log_metric()
 	})
 	return s.Conn.CloseReader()
 }
@@ -94,13 +100,26 @@ func (s *Session) CloseReaderWithError(err error) error {
 func (s *Session) CloseWithError(err error) error {
 	s.exit.Do(func() {
 		if err != nil {
-			log.Infof("session [%p] closed: %s, error: %s", s, s, err)
+			log.Infof("session [%d] closed: %s, error: %s", s.id, s, err)
 		} else {
-			log.Infof("session [%p] closed: %s, quit", s, s)
+			log.Infof("session [%d] closed: %s, quit", s.id, s)
 		}
+		s.log_metric()
 	})
 	s.broken.Set(true)
 	return s.Conn.Close()
+}
+
+func (s *Session) log_metric() {
+	op_stats := make([]*OpStats, 0, len(s.stats.opmap))
+	for _, v := range s.stats.opmap {
+		op_stats = append(op_stats, v.OpStats())
+	}
+	b, err := json.Marshal(op_stats)
+	if err != nil {
+		log.Panicf("Marshal json failed %v", err)
+	}
+	log.Infof("session [%d] metric %s", s.id, b)
 }
 
 var (

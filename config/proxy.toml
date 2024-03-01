@@ -54,11 +54,11 @@ proxy_heap_placeholder = "256mb"
 backend_ping_period = "5s"
 
 # Set backend recv buffer size & timeout.
-backend_recv_bufsize = "128kb"
+backend_recv_bufsize = "4mb"
 backend_recv_timeout = "30s"
 
 # Set backend send buffer & timeout.
-backend_send_bufsize = "128kb"
+backend_send_bufsize = "4mb"
 backend_send_timeout = "30s"
 
 # Set backend pipeline buffer size.
@@ -75,15 +75,15 @@ backend_replica_parallel = 1
 backend_keepalive_period = "75s"
 
 # Set number of databases of backend.
-backend_number_databases = 16
+backend_number_databases = 1
 
 # If there is no request from client for a long time, the connection will be closed. (0 to disable)
 # Set session recv buffer size & timeout.
-session_recv_bufsize = "128kb"
+session_recv_bufsize = "4mb"
 session_recv_timeout = "30m"
 
 # Set session send buffer size & timeout.
-session_send_bufsize = "64kb"
+session_send_bufsize = "4mb"
 session_send_timeout = "30s"
 
 # Make sure this is higher than the max number of requests for each pipeline request, or your client may be blocked.
