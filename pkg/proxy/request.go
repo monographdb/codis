@@ -23,6 +23,7 @@ type Request struct {
 
 	Database int32
 	UnixNano int64
+	UsInner  int64
 
 	*redis.Resp
 	Err error

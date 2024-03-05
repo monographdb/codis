@@ -5,6 +5,7 @@ package proxy
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net"
 	"strconv"
@@ -39,6 +40,7 @@ type BackendConn struct {
 	config *Config
 
 	database int
+	stats    map[string]*OpStats
 }
 
 func NewBackendConn(addr string, database int, config *Config) *BackendConn {
@@ -50,6 +52,7 @@ func NewBackendConn(addr string, database int, config *Config) *BackendConn {
 		Min: 50, Max: 5000,
 		Unit: time.Millisecond,
 	}
+	bc.stats = make(map[string]*OpStats, 16)
 
 	go bc.run()
 
@@ -65,6 +68,34 @@ func (bc *BackendConn) Close() {
 		close(bc.input)
 	})
 	bc.closed.Set(true)
+}
+
+func (bc *BackendConn) log_metric() {
+	stats := make([]*OpStats, 0, len(bc.stats))
+	for _, v := range bc.stats {
+		v.UsecsPercall = v.Usecs / v.Calls
+		stats = append(stats, v)
+	}
+	js, err := json.Marshal(stats)
+	if err != nil {
+		log.Panic(err)
+	}
+	log.Infof("BackendConn [%s] metric %s", bc.Dest(), string(js))
+}
+
+func (bc *BackendConn) Stat(op string) *OpStats {
+	stat, ok := bc.stats[op]
+	if !ok {
+		stat = &OpStats{
+			OpStr: op,
+		}
+		bc.stats[op] = stat
+	}
+	return stat
+}
+
+func (bc *BackendConn) Dest() string {
+	return fmt.Sprintf("%s/%d", bc.addr, bc.database)
 }
 
 func (bc *BackendConn) IsConnected() bool {
@@ -127,8 +158,8 @@ func (bc *BackendConn) KeepAlive() bool {
 						return nil
 					}
 					if bc.state.CompareAndSwap(stateDataStale, stateConnected) {
-						log.Warnf("backend conn [%p] to %s, db-%d state = Connected (keepalive)",
-							bc, bc.addr, bc.database)
+						log.Warnf("backend conn [%p] to %s state = Connected (keepalive)",
+							bc, bc.Dest())
 					}
 					return nil
 				default:
@@ -136,8 +167,8 @@ func (bc *BackendConn) KeepAlive() bool {
 				}
 			}()
 			if err != nil && bc.closed.IsFalse() {
-				log.WarnErrorf(err, "backend conn [%p] to %s, db-%d recover from DataStale failed",
-					bc, bc.addr, bc.database)
+				log.WarnErrorf(err, "backend conn [%p] to %s recover from DataStale failed",
+					bc, bc.Dest())
 			}
 		}
 	}
@@ -255,17 +286,17 @@ var (
 )
 
 func (bc *BackendConn) run() {
-	log.Warnf("backend conn [%p] to %s, db-%d start service",
-		bc, bc.addr, bc.database)
+	log.Warnf("backend conn [%p] to %s start service",
+		bc, bc.Dest())
 	for round := 0; bc.closed.IsFalse(); round++ {
-		log.Warnf("backend conn [%p] to %s, db-%d round-[%d]",
-			bc, bc.addr, bc.database, round)
+		log.Warnf("backend conn [%p] to %s round-[%d]",
+			bc, bc.Dest(), round)
 		if err := bc.loopWriter(round); err != nil {
 			bc.delayBeforeRetry()
 		}
 	}
-	log.Warnf("backend conn [%p] to %s, db-%d stop and exit",
-		bc, bc.addr, bc.database)
+	log.Warnf("backend conn [%p] to %s stop and exit",
+		bc, bc.Dest())
 }
 
 var (
@@ -279,10 +310,11 @@ func (bc *BackendConn) loopReader(tasks <-chan *Request, c *redis.Conn, round in
 		for r := range tasks {
 			bc.setResponse(r, nil, ErrBackendConnReset)
 		}
-		log.WarnErrorf(err, "backend conn [%p] to %s, db-%d reader-[%d] exit",
-			bc, bc.addr, bc.database, round)
+		log.WarnErrorf(err, "backend conn [%p] to %s reader-[%d] exit",
+			bc, bc.Dest(), round)
 	}()
 	for r := range tasks {
+		stat := bc.Stat(r.OpStr)
 		resp, err := c.Decode()
 		if err != nil {
 			return bc.setResponse(r, nil, fmt.Errorf("backend conn failure, %s", err))
@@ -291,18 +323,23 @@ func (bc *BackendConn) loopReader(tasks <-chan *Request, c *redis.Conn, round in
 			switch {
 			case bytes.HasPrefix(resp.Value, errRespMasterDown):
 				if bc.state.CompareAndSwap(stateConnected, stateDataStale) {
-					log.Warnf("backend conn [%p] to %s, db-%d state = DataStale, caused by 'MASTERDOWN'",
-						bc, bc.addr, bc.database)
+					log.Warnf("backend conn [%p] to %s state = DataStale, caused by 'MASTERDOWN'",
+						bc, bc.Dest())
 				}
 			case bytes.HasPrefix(resp.Value, errRespLoading):
 				if bc.state.CompareAndSwap(stateConnected, stateDataStale) {
-					log.Warnf("backend conn [%p] to %s, db-%d state = DataStale, caused by 'LOADING'",
-						bc, bc.addr, bc.database)
+					log.Warnf("backend conn [%p] to %s state = DataStale, caused by 'LOADING'",
+						bc, bc.Dest())
 				}
 			}
+			stat.Fails++
+		} else {
+			stat.Calls++
+			stat.Usecs += (time.Now().UnixMicro() - r.UsInner)
 		}
 		bc.setResponse(r, resp, nil)
 	}
+	bc.log_metric()
 	return nil
 }
 
@@ -331,8 +368,8 @@ func (bc *BackendConn) loopWriter(round int) (err error) {
 			r := <-bc.input
 			bc.setResponse(r, nil, ErrBackendConnReset)
 		}
-		log.WarnErrorf(err, "backend conn [%p] to %s, db-%d writer-[%d] exit",
-			bc, bc.addr, bc.database, round)
+		log.WarnErrorf(err, "backend conn [%p] to %s writer-[%d] exit",
+			bc, bc.Dest(), round)
 	}()
 	c, tasks, err := bc.newBackendReader(round, bc.config)
 	if err != nil {
@@ -361,6 +398,7 @@ func (bc *BackendConn) loopWriter(round int) (err error) {
 		if err := p.Flush(len(bc.input) == 0); err != nil {
 			return bc.setResponse(r, nil, fmt.Errorf("backend conn failure, %s", err))
 		} else {
+			r.UsInner = time.Now().UnixMicro()
 			tasks <- r
 		}
 	}
