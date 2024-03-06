@@ -24,7 +24,6 @@ import (
 	"github.com/CodisLabs/codis/pkg/topom"
 	"github.com/CodisLabs/codis/pkg/utils"
 	"github.com/CodisLabs/codis/pkg/utils/log"
-	"github.com/CodisLabs/codis/pkg/utils/math2"
 )
 
 func main() {
@@ -86,25 +85,23 @@ Options:
 		}
 	}
 
-	var ncpu int
-	if n, ok := utils.ArgumentInteger(d, "--ncpu"); ok {
-		ncpu = n
-	} else {
-		ncpu = 4
-	}
-	runtime.GOMAXPROCS(ncpu)
-
-	var maxncpu int
-	if n, ok := utils.ArgumentInteger(d, "--max-ncpu"); ok {
-		maxncpu = math2.MaxInt(ncpu, n)
-	} else {
-		maxncpu = math2.MaxInt(ncpu, runtime.NumCPU())
-	}
-	log.Warnf("set ncpu = %d, max-ncpu = %d", ncpu, maxncpu)
-
-	if ncpu < maxncpu {
-		go AutoGOMAXPROCS(ncpu, maxncpu)
-	}
+	// var ncpu int
+	// if n, ok := utils.ArgumentInteger(d, "--ncpu"); ok {
+	// 	ncpu = n
+	// } else {
+	// 	ncpu = 4
+	// }
+	// runtime.GOMAXPROCS(ncpu)
+	// var maxncpu int
+	// if n, ok := utils.ArgumentInteger(d, "--max-ncpu"); ok {
+	// 	maxncpu = math2.MaxInt(ncpu, n)
+	// } else {
+	// 	maxncpu = math2.MaxInt(ncpu, runtime.NumCPU())
+	// }
+	// log.Warnf("set ncpu = %d, max-ncpu = %d", ncpu, maxncpu)
+	// if ncpu < maxncpu {
+	// 	go AutoGOMAXPROCS(ncpu, maxncpu)
+	// }
 
 	config := proxy.NewDefaultConfig()
 	if s, ok := utils.Argument(d, "--config"); ok {
